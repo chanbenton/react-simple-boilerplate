@@ -1,17 +1,105 @@
 import React, {Component} from 'react';
 
-class App extends Component {
-  render() {} // remove close bracket here when executing, find JSX-reader plugin for sublime
-    return (
-      <h1>Hello React :)</h1>
+export default class App extends Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
+      messages: [
+        {
+          username: "Bob",
+          content: "Has anyone seen my marbles?",
+          id: 1
+        },
+        {
+          username: "Anonymous",
+          content: "No, I think you lost them. You lost your marbles Bob. You lost them for good.",
+          id: 2
+        }
+      ]
+    };
+
+  }
+
+  render() {
+    return (<div>
+      <MessageList msgList={this.state.messages} />
+      <ChatBar user={this.state.currentUser.name} />
+      </div>
     );
   }
-  // console.log("Rendering <App/>");
 }
-/*
-export default App;
 
+class ChatBar extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      user: props.user
+    };
+
+  }
+
+  render() {
+    return (
+      <footer className="chatbar">
+        <input className="chatbar-username" placeholder="Your Name (Optional)" defaultValue={this.state.user}/>
+        <input className="chatbar-message" placeholder="Type a message and hit ENTER" />
+      </footer>
+    );
+  }
+}
+
+class Message extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      curMsg: props.curMessage
+    };
+
+  }
+
+  render() {
+    return (
+      <div className="message">
+        <span className="message-username">{this.state.curMsg.username}</span>
+        <span className="message-content">{this.state.curMsg.content}</span>
+      </div>
+    );
+  }
+  // return <h1>Hello, {props.name}</h1>;
+}
+
+class MessageList extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      msgArray: props.msgList
+    };
+
+
+  }
+
+  render() {
+    const msgBlock = this.state.msgArray.map((Msg) =>
+    <Message curMessage={Msg} key={Msg.id}/>
+    );
+    return (
+      <main className="messages">
+        {msgBlock}
+      </main>
+    );
+  }
+  // <div className="message system">
+  //   Anonymous1 changed their name to nomnom.
+  // </div>
+}
+
+
+
+// export default App;
+
+/*
 function Header(props) {
   return (
     <div className="header">
@@ -26,13 +114,9 @@ Header.propTypes = {
 
 var Counter = React.createClass({
   propTypes: {},
-  
-  getInitialState: function() {
-    return {
-      score: 0,
-    }
+
   },
-  
+
   render: function() {
     return (
       <div className="counter">
@@ -67,7 +151,7 @@ function Application(props) {
   return (
     <div className="scoreboard">
       <Header title={props.title} />
-    
+
       <div className="players">
         {props.players.map(function(player) {
           return <Player name={player.name} score={player.score} key={player.id} />
