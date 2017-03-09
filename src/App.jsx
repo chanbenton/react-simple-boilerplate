@@ -80,44 +80,24 @@ class ChatBar extends Component {
   }
 }
 
-class Message extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      curMsg: props.curMessage
-    };
-
-  }
-
-  render() {
-    return (
-      <div className="message">
-        <span className="message-username">{this.state.curMsg.username}</span>
-        <span className="message-content">{this.state.curMsg.content}</span>
-      </div>
-    );
-  }
+const Message = (props) => {
+  return (
+    <div className="message">
+      <span className="message-username">{props.curMessage.username}</span>
+      <span className="message-content">{props.curMessage.content}</span>
+    </div>
+  );
 }
 
-class MessageList extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      msgArray: props.msgList
-    };
-
-  }
-
-  render() {
-    const msgBlock = this.props.msgList.map((Msg) =>
-      <Message curMessage={Msg} key={Msg.id}/>
-    );
-    return (
-      <main className="messages">
-        {msgBlock}
-      </main>
-    );
-  }
+const MessageList = (props) => {
+  const msgBlock = props.msgList.map((Msg) =>
+    <Message curMessage={Msg} key={Msg.id}/>
+  );
+  return (
+    <main className="messages">
+      {msgBlock}
+    </main>
+  );
 }
 
 
