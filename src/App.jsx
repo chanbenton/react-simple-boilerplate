@@ -4,7 +4,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
+      currentUser: {name: ""}, // optional. if currentUser is not defined, it means the user is Anonymous
       messages: []
     };
   this.newMessage = this.newMessage.bind(this);
@@ -39,8 +39,14 @@ export default class App extends Component {
   }
 
   newMessage (user, newMsg) {
+    if (newMsg === null) {
+      this.setState ({
+        currentUser:user
+      });
+    } else {
     const nextMessage = {username: user, content: newMsg};
     this.socket.send(JSON.stringify(nextMessage));
+    }
   }
 
 
@@ -61,7 +67,8 @@ class ChatBar extends Component {
       msg: "",
     };
   this.handleChange = this.handleChange.bind(this);
-  this.handleSubmit = this.handleSubmit.bind(this);
+  this.handleMsgSubmit = this.handleMsgSubmit.bind(this);
+  this.handleNameSubmit = this.handleNameSubmit.bind(this);
   }
 
   handleChange(event) {
@@ -78,20 +85,25 @@ class ChatBar extends Component {
     }
   }
 
-  handleSubmit(event) {
-    this.props.callback(this.state.user, this.state.msg);
-    event.preventDefault();
+  handleNameSubmit(event) {
+    if (event.key === 'Enter') {
+      this.props.callback(this.state.user, null);
+      event.preventDefault();
+    }
+  }
+
+  handleMsgSubmit(event) {
+    if (event.key === 'Enter') {
+      this.props.callback(this.state.user, this.state.msg);
+      event.preventDefault();
+    }
   }
 
   render() {
     return (
-      <footer>
-      <form onSubmit={this.handleSubmit} className="chatbar">
-          <input name="txtUser" className="chatbar-username" placeholder="Your Name (Optional)" value={this.state.user} onChange={this.handleChange}/>
-          <input name="txtMsg" className="chatbar-message" placeholder="Type a message and hit ENTER" value={this.state.msg} onChange={this.handleChange}/>
-          <input type="submit" value="Submit" />
-        </form>
-
+      <footer className="chatbar">
+        <input onKeyUp={this.handleNameSubmit} className="chatbar-username" name="txtUser" placeholder="Your Name (Optional)" value={this.state.user} onChange={this.handleChange}/>
+        <input onKeyUp={this.handleMsgSubmit} className="chatbar-message" name="txtMsg" placeholder="Type a message and hit ENTER" value={this.state.msg} onChange={this.handleChange}/>
       </footer>
     );
   }
@@ -116,8 +128,3 @@ const MessageList = (props) => {
     </main>
   );
 }
-
-
-  // <div className="message system">
-  //   Anonymous1 changed their name to nomnom.
-  // </div>
