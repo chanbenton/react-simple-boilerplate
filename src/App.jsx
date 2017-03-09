@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 
 export default class App extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -19,13 +18,19 @@ export default class App extends Component {
         }
       ]
     };
-
+  this.newMessage = this.newMessage.bind(this);
   }
-
+  newMessage (user, newMsg) {
+    const nextMessage = {id: this.state.messages.length+1, username: user, content: newMsg};
+    const messages = this.state.messages.concat(nextMessage);
+    this.setState({
+      messages: messages
+    });
+  }
   render() {
     return (<div>
-      <MessageList msgList={this.state.messages} />
-      <ChatBar user={this.state.currentUser.name} />
+      <MessageList msgList={this.state.messages}/>
+      <ChatBar user={this.state.currentUser.name} callback={this.newMessage} />
       </div>
     );
   }
@@ -35,16 +40,41 @@ class ChatBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: props.user
+      user: props.user,
+      msg: "",
     };
+  this.handleChange = this.handleChange.bind(this);
+  this.handleSubmit = this.handleSubmit.bind(this);
+  }
 
+  handleChange(event) {
+    const target = event.target;
+    const name = target.name;
+    if (name === "txtUser") {
+      this.setState ({
+        user:target.value
+      });
+    } else {
+      this.setState ({
+        msg:target.value
+      });
+    }
+  }
+
+  handleSubmit(event) {
+    this.props.callback(this.state.user, this.state.msg);
+    event.preventDefault();
   }
 
   render() {
     return (
-      <footer className="chatbar">
-        <input className="chatbar-username" placeholder="Your Name (Optional)" defaultValue={this.state.user}/>
-        <input className="chatbar-message" placeholder="Type a message and hit ENTER" />
+      <footer>
+      <form onSubmit={this.handleSubmit} className="chatbar">
+          <input name="txtUser" className="chatbar-username" placeholder="Your Name (Optional)" value={this.state.user} onChange={this.handleChange}/>
+          <input name="txtMsg" className="chatbar-message" placeholder="Type a message and hit ENTER" value={this.state.msg} onChange={this.handleChange}/>
+          <input type="submit" value="Submit" />
+        </form>
+
       </footer>
     );
   }
@@ -67,7 +97,6 @@ class Message extends Component {
       </div>
     );
   }
-  // return <h1>Hello, {props.name}</h1>;
 }
 
 class MessageList extends Component {
@@ -77,12 +106,11 @@ class MessageList extends Component {
       msgArray: props.msgList
     };
 
-
   }
 
   render() {
-    const msgBlock = this.state.msgArray.map((Msg) =>
-    <Message curMessage={Msg} key={Msg.id}/>
+    const msgBlock = this.props.msgList.map((Msg) =>
+      <Message curMessage={Msg} key={Msg.id}/>
     );
     return (
       <main className="messages">
@@ -90,87 +118,9 @@ class MessageList extends Component {
       </main>
     );
   }
+}
+
+
   // <div className="message system">
   //   Anonymous1 changed their name to nomnom.
   // </div>
-}
-
-
-
-// export default App;
-
-/*
-function Header(props) {
-  return (
-    <div className="header">
-      <h1>{props.title}</h1>
-    </div>
-  );
-}
-
-Header.propTypes = {
-  title: React.PropTypes.string.isRequired,
-};
-
-var Counter = React.createClass({
-  propTypes: {},
-
-  },
-
-  render: function() {
-    return (
-      <div className="counter">
-        <button className="counter-action decrement"> - </button>
-        <div className="counter-score"> {this.state.score} </div>
-        <button className="counter-action increment"> + </button>
-      </div>
-    );
-  }
-});
-
-
-function Player(props) {
-  return (
-    <div className="player">
-      <div className="player-name">
-        {props.name}
-      </div>
-      <div className="player-score">
-        <Counter />
-      </div>
-    </div>
-  );
-}
-
-Player.propTypes = {
-  name: React.PropTypes.string.isRequired,
-  score: React.PropTypes.number.isRequired,
-};
-
-function Application(props) {
-  return (
-    <div className="scoreboard">
-      <Header title={props.title} />
-
-      <div className="players">
-        {props.players.map(function(player) {
-          return <Player name={player.name} score={player.score} key={player.id} />
-        })}
-      </div>
-    </div>
-  );
-}
-
-Application.propTypes = {
-  title: React.PropTypes.string,
-  players: React.PropTypes.arrayOf(React.PropTypes.shape({
-    name: React.PropTypes.string.isRequired,
-    score: React.PropTypes.number.isRequired,
-    id: React.PropTypes.number.isRequired,
-  })).isRequired,
-};
-
-Application.defaultProps = {
-  title: "Scoreboard",
-}
-*/
