@@ -5,28 +5,45 @@ export default class App extends Component {
     super(props);
     this.state = {
       currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
-      messages: [
-        {
-          username: "Bob",
-          content: "Has anyone seen my marbles?",
-          id: 1
-        },
-        {
-          username: "Anonymous",
-          content: "No, I think you lost them. You lost your marbles Bob. You lost them for good.",
-          id: 2
-        }
-      ]
+      messages: []
     };
   this.newMessage = this.newMessage.bind(this);
   }
-  newMessage (user, newMsg) {
-    const nextMessage = {id: this.state.messages.length+1, username: user, content: newMsg};
-    const messages = this.state.messages.concat(nextMessage);
-    this.setState({
-      messages: messages
-    });
+
+  componentDidMount() {
+     // Let us open a web socket
+     const ws = new WebSocket("ws://localhost:3001/");
+
+     this.socket = ws;
+
+     ws.onopen = function()
+     {
+        // Web Socket is connected, send data using send()
+        // ws.send("Message to send");
+        // alert("Message is sent...");
+     };
+
+     ws.onmessage = event => {
+        console.log(event.data);
+        const messages = this.state.messages.concat(JSON.parse(event.data));
+        this.setState({
+          messages: messages
+        });
+     };
+
+ // ws.onclose = function()
+ // {
+ //    // websocket is closed.
+ //    alert("Connection is closed...");
+ // };
   }
+
+  newMessage (user, newMsg) {
+    const nextMessage = {username: user, content: newMsg};
+    this.socket.send(JSON.stringify(nextMessage));
+  }
+
+
   render() {
     return (<div>
       <MessageList msgList={this.state.messages}/>
