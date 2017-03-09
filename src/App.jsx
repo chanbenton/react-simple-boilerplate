@@ -11,25 +11,40 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-     // Let us open a web socket
-     const ws = new WebSocket("ws://localhost:3001/");
+    // Let us open a web socket
+    const ws = new WebSocket("ws://localhost:3001/");
 
-     this.socket = ws;
+    this.socket = ws;
 
-     ws.onopen = function()
-     {
+    ws.onopen = function()
+    {
         // Web Socket is connected, send data using send()
         // ws.send("Message to send");
         // alert("Message is sent...");
-     };
+    };
 
-     ws.onmessage = event => {
-        console.log(event.data);
-        const messages = this.state.messages.concat(JSON.parse(event.data));
-        this.setState({
-          messages: messages
-        });
-     };
+    ws.onmessage = event => {
+      const data = JSON.parse(event.data);
+      console.log(event.data);
+
+      // The socket event data is encoded as a JSON string.
+      // This line turns it into an object
+      switch(data.type) {
+        case "incomingMessage":
+          // handle incoming message
+          const messages = this.state.messages.concat(data);
+          this.setState({
+            messages: messages
+          });
+          break;
+        case "incomingNotification":
+          // handle incoming notification
+          break;
+        default:
+          // show an error in the console if the message type is unknown
+          throw new Error("Unknown event type " + data.type);
+      }
+    };
 
  // ws.onclose = function()
  // {
@@ -44,7 +59,14 @@ export default class App extends Component {
         currentUser:user
       });
     } else {
-    const nextMessage = {username: user, content: newMsg};
+      if (user.length === 0) {
+        user = "Anonymous";
+      }
+    const nextMessage = {
+      username: user,
+      content: newMsg,
+      type:"incomingMessage"
+    };
     this.socket.send(JSON.stringify(nextMessage));
     }
   }
