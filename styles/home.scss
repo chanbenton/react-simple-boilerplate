@@ -90,3 +90,28 @@ body {
   padding: 0 10px;
   text-decoration: none;
 }
+
+.navbar-usersOn {
+  color: inherit;
+  display: block;
+  float: left;
+  /*font-weight: 700;*/
+  font-size: 14px;
+  height: 60px;
+  line-height: 60px;
+  padding: 0 10px;
+  text-decoration: none;
+  float:right;
+}
+
+.navbar-counter {
+  color: inherit;
+  display: block;
+  float: left;
+  font-weight: 700;
+  font-size: 28px;
+  height: 60px;
+  line-height: 60px;
+  padding: 0 10px;
+  text-decoration: none;
+}

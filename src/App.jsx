@@ -5,7 +5,8 @@ export default class App extends Component {
     super(props);
     this.state = {
       currentUser: {name: ""}, // optional. if currentUser is not defined, it means the user is Anonymous
-      messages: []
+      messages: [],
+      usersOn: 0
     };
   this.newMessage = this.newMessage.bind(this);
   }
@@ -13,14 +14,14 @@ export default class App extends Component {
   componentDidMount() {
     // Let us open a web socket
     const ws = new WebSocket("ws://localhost:3001/");
-
     this.socket = ws;
 
     ws.onopen = function()
     {
+
         // Web Socket is connected, send data using send()
         // ws.send("Message to send");
-        // alert("Message is sent...");
+        
     };
 
     ws.onmessage = event => {
@@ -31,52 +32,73 @@ export default class App extends Component {
       // This line turns it into an object
       switch(data.type) {
         case "incomingMessage":
+        case "incomingNotification":
           // handle incoming message
-          const messages = this.state.messages.concat(data);
+          let messages = this.state.messages.concat(data);
           this.setState({
             messages: messages
           });
           break;
-        case "incomingNotification":
-          // handle incoming notification
+        case "numUsers":
+          console.log(data.count);
+          this.setState({
+            usersOn: data.count
+          })
           break;
         default:
           // show an error in the console if the message type is unknown
           throw new Error("Unknown event type " + data.type);
       }
     };
-
- // ws.onclose = function()
- // {
- //    // websocket is closed.
- //    alert("Connection is closed...");
- // };
   }
 
   newMessage (user, newMsg) {
     if (newMsg === null) {
+      const alertMessage = {
+        "type": "incomingNotification",
+        "content": `${this.state.currentUser.name} has changed their name to ${user}.`
+      }
       this.setState ({
-        currentUser:user
+        currentUser: {name:user},
       });
+      this.socket.send(JSON.stringify(alertMessage));
+
     } else {
       if (user.length === 0) {
         user = "Anonymous";
       }
-    const nextMessage = {
-      username: user,
-      content: newMsg,
-      type:"incomingMessage"
-    };
-    this.socket.send(JSON.stringify(nextMessage));
+      const nextMessage = {
+        username: user,
+        content: newMsg,
+        type:"incomingMessage"
+      };
+      this.socket.send(JSON.stringify(nextMessage));
     }
   }
 
-
   render() {
-    return (<div>
-      <MessageList msgList={this.state.messages}/>
-      <ChatBar user={this.state.currentUser.name} callback={this.newMessage} />
+    return (
+      <div>
+        <NavBar curCount={this.state.usersOn}/>
+        <MessageList msgList={this.state.messages}/>
+        <ChatBar user={this.state.currentUser.name} callback={this.newMessage} />
       </div>
+    );
+  }
+}
+
+class NavBar extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+    }
+  }
+  render() {
+    return (
+    <nav className="navbar">
+      <a href="/" className="navbar-brand">Chatty</a>
+      <span className="navbar-usersOn">{this.props.curCount} users online</span>
+    </nav>
     );
   }
 }
@@ -132,12 +154,18 @@ class ChatBar extends Component {
 }
 
 const Message = (props) => {
-  return (
-    <div className="message">
-      <span className="message-username">{props.curMessage.username}</span>
-      <span className="message-content">{props.curMessage.content}</span>
-    </div>
-  );
+  if (props.curMessage.type === "incomingMessage"){
+    return (
+      <div className="message">
+        <span className="message-username">{props.curMessage.username}</span>
+        <span className="message-content">{props.curMessage.content}</span>
+      </div>
+    );
+  } else if (props.curMessage.type === "incomingNotification") {
+    return (
+      <div className="message system">{props.curMessage.content}</div>
+    );
+  }
 }
 
 const MessageList = (props) => {
